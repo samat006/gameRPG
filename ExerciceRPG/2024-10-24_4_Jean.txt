@@ -1,0 +1,18 @@
+Jean
+Elfe
+Wizard
+Lvl: 1
+XP: 1
+_strength 5
+magic 30
+agility 20
+speed 20
+charisma 30
+chance 35
+endurance 36
+life_point 48
+attack 65
+defense 66
+wizard baton
+life potion
+life potion

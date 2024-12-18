@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plateau de Jeu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+        h1 { color: #333; }
+        #plateau {
+            display: grid;
+            grid-template-columns: repeat(10, 50px);
+            grid-gap: 2px;
+            margin: 20px auto;
+            width: fit-content;
+        }
+        .case {
+            width: 50px;
+            height: 50px;
+            background-color: #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #ccc;
+        }
+        .player1 { background-color: red; color: white; }
+        .player2 { background-color: blue; color: white; }
+        .mob { background-color: green; color: white; }
+        .item { background-color: gold; }
+    </style>
+</head>
+<body>
+    <h1>Plateau de Jeu</h1>
+    <button onclick="startNewGame()">Nouvelle Partie</button>
+    <button onclick="deplacerJoueur(1)">Avancer Joueur 1</button>
+    <button onclick="deplacerJoueur(2)">Avancer Joueur 2</button>
+    <div id="plateau"></div>
+
+    <script>
+        const plateau = document.getElementById('plateau');
+        const plateauTaille = 50; // 10 x 5
+        let contenuPlateau = Array(plateauTaille).fill(null);
+        let positionJoueur1 = 0;
+        let positionJoueur2 = 1;
+        let mobs = [];
+        let items = [];
+
+        // Générer et afficher le plateau
+        function genererPlateau() {
+            plateau.innerHTML = '';
+            for (let i = 0; i < plateauTaille; i++) {
+                const div = document.createElement('div');
+                div.classList.add('case');
+
+                // Afficher les joueurs
+                if (i === positionJoueur1) {
+                    div.classList.add('player1');
+                    div.textContent = 'J1';
+                } else if (i === positionJoueur2) {
+                    div.classList.add('player2');
+                    div.textContent = 'J2';
+                }
+                // Afficher les mobs
+                else if (contenuPlateau[i] === 'mob') {
+                    div.classList.add('mob');
+                    div.textContent = 'M';
+                }
+                // Afficher les items
+                else if (contenuPlateau[i] === 'item') {
+                    div.classList.add('item');
+                    div.textContent = 'I';
+                }
+
+                plateau.appendChild(div);
+            }
+        }
+
+        // Démarrer une nouvelle partie
+        function startNewGame() {
+            fetch('/new-game', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    player1_name: prompt("Nom du Joueur 1 :") || "Joueur 1",
+                    player2_name: prompt("Nom du Joueur 2 :") || "Joueur 2"
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert("Nouvelle partie créée !");
+                mobs = data.mobs; // Stocker les mobs
+                items = data.items; // Stocker les items
+                initialiserContenu(data);
+                genererPlateau(); // Générer le plateau après avoir ajouté les mobs et items
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert("Erreur lors de la création de la partie.");
+            });
+        }
+
+        // Initialiser le contenu du plateau avec les mobs et les items
+        function initialiserContenu(data) {
+            contenuPlateau.fill(null); // Réinitialise le plateau
+            data.mobs.forEach(mob => contenuPlateau[mob.position] = 'mob'); // Ajoute les mobs
+            data.items.forEach(item => contenuPlateau[item.position] = 'item'); // Ajoute les items
+        }
+
+        // Déplacer le joueur
+        function deplacerJoueur(joueur) {
+            const deplacement = Math.floor(Math.random() * 6) + 1; // Lancer de dé (entre 1 et 6)
+            alert(`Joueur ${joueur} avance de ${deplacement} cases.`);
+
+            let positionActuelle;
+            let autreJoueurPosition;
+            let joueurNom;
+
+            if (joueur === 1) {
+                positionActuelle = positionJoueur1;
+                joueurNom = 'Joueur 1';
+                autreJoueurPosition = positionJoueur2;
+            } else {
+                positionActuelle = positionJoueur2;
+                joueurNom = 'Joueur 2';
+                autreJoueurPosition = positionJoueur1;
+            }
+
+            const nouvellePosition = Math.min(positionActuelle + deplacement, plateauTaille - 1);
+            
+            // Vérifier si un mob est sur la case
+            if (contenuPlateau[nouvellePosition] === 'mob') {
+                const mobIndex = contenuPlateau.indexOf('mob', nouvellePosition); // Trouver le mob
+                const mob = {
+                    name: "Goblin",
+                    hp: 50,
+                    attack: 10};
+                lancerCombat(joueurNom, mob);
+            }
+
+            // Mettre à jour la position du joueur
+            if (joueur === 1) {
+                positionJoueur1 = nouvellePosition;
+            } else {
+                positionJoueur2 = nouvellePosition;
+            }
+
+            genererPlateau(); // Re-générer le plateau après chaque déplacement
+        }
+
+        // Fonction pour envoyer les données au combat
+        function lancerCombat(joueurNom, mob) {
+            fetch('/combat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    joueur: joueurNom,
+                    mob: mob
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Résultat du combat :", data);
+                alert("Résultat du combat : " + JSON.stringify(data));
+            })
+            .catch(error => {
+                console.error("Erreur lors du combat :", error);
+            });
+        }
+    </script>
+</body>
+</html>

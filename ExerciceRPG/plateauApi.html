@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu de Plateau</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f9;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        /* Style du plateau */
+        #plateau {
+            display: grid;
+            grid-template-columns: repeat(10, 50px);
+            grid-template-rows: repeat(5, 50px);
+            gap: 2px;
+            margin: 20px auto;
+            border: 2px solid #000;
+            width: fit-content;
+        }
+
+        .case {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ddd;
+            border: 1px solid #ccc;
+        }
+
+        .player1 {
+            background-color: red;
+            color: white;
+            font-weight: bold;
+        }
+
+        .player2 {
+            background-color: blue;
+            color: white;
+            font-weight: bold;
+        }
+
+        .mob {
+            background-color: green;
+            color: white;
+        }
+
+        .item {
+            background-color: gold;
+            color: black;
+        }
+
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .log {
+            margin-top: 20px;
+            width: 80%;
+            max-height: 300px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f8f8f8;
+        }
+    </style>
+</head>
+<body>
+    <h1>Plateau de Jeu</h1>
+    <div id="plateau"></div>
+
+    <!-- Buttons to interact with the game -->
+    <div>
+        <button onclick="initGame()">Initialiser le jeu</button>
+        <button onclick="jouerTour()">Jouer un tour</button>
+    </div>
+
+    <!-- Log section to display actions -->
+    <div class="log" id="log"></div>
+
+    <script>
+        let plateau = document.getElementById('plateau');
+        let logElement = document.getElementById('log');
+        let players = [
+            { nom: "Joueur 1", position: 0, life: 100 },
+            { nom: "Joueur 2", position: 0, life: 100 }
+        ];
+        let mobs = [
+            { nom: "Gobelin", life: 30, position: 10 },
+            { nom: "Orc", life: 50, position: 20 }
+        ];
+        let itemsDisponibles = [
+            { nom: "Potion", effect: "soigne 20" },
+            { nom: "Épée", effect: "ajoute 10 dégâts" }
+        ];
+
+        function initGame() {
+            // Simulate calling your Flask backend to initialize the game
+            logElement.innerHTML = "<p>Le jeu a été initialisé !</p>";
+            genererPlateau();
+        }
+
+        function jouerTour() {
+            // Simulate calling your Flask backend to play a turn
+            logElement.innerHTML += "<p>Un tour a été joué !</p>";
+            genererPlateau();
+        }
+
+        function genererPlateau() {
+            plateau.innerHTML = "";
+            for (let i = 0; i < 50; i++) {
+                const div = document.createElement('div');
+                div.classList.add('case');
+
+                // Check if a player is on this square
+                if (i === players[0].position) {
+                    div.classList.add('player1');
+                    div.textContent = "J1";
+                } else if (i === players[1].position) {
+                    div.classList.add('player2');
+                    div.textContent = "J2";
+                }
+
+                // Check if a mob is on this square
+                for (let mob of mobs) {
+                    if (i === mob.position) {
+                        div.classList.add('mob');
+                        div.textContent = "M";
+                    }
+                }
+
+                // Check if an item is on this square
+                for (let item of itemsDisponibles) {
+                    if (i === item.position) {
+                        div.classList.add('item');
+                        div.textContent = "I";
+                    }
+                }
+
+                plateau.appendChild(div);
+            }
+        }
+    </script>
+</body>
+</html>

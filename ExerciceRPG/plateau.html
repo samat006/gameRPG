@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plateau de Jeu</title>
+    <style>
+        /* Style général */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f9;
+            margin: 0;
+        }
+        
+        h1 {
+            color: #333;
+        }
+
+        /* Style du plateau */
+        #plateau {
+            display: grid;
+            grid-template-columns: repeat(10, 50px);
+            grid-template-rows: repeat(5, 50px);
+            gap: 2px;
+            margin: 20px;
+            border: 2px solid #000;
+        }
+
+        .case {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ddd;
+            border: 1px solid #ccc;
+        }
+
+        .player1 {
+            background-color: red;
+            color: white;
+            font-weight: bold;
+        }
+
+        .player2 {
+            background-color: blue;
+            color: white;
+            font-weight: bold;
+        }
+
+        .item {
+            background-color: gold;
+            color: black;
+        }
+
+        .mob {
+            background-color: green;
+            color: white;
+        }
+
+        /* Boutons */
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Plateau de Jeu</h1>
+    <div id="plateau"></div>
+
+    <div>
+        <button onclick="deplacerJoueur(1)">Avancer Joueur 1</button>
+        <button onclick="deplacerJoueur(2)">Avancer Joueur 2</button>
+    </div>
+
+    <script>
+        const plateauTaille = { x: 10, y: 5 };
+        const plateau = document.getElementById('plateau');
+
+        let positionJoueur1 = 0;
+        let positionJoueur2 = 0;
+
+        const contenuPlateau = []; // Stocke le contenu de chaque case (mob/item/null)
+
+        // Initialisation du plateau
+        function genererPlateau() {
+            plateau.innerHTML = "";
+            for (let i = 0; i < plateauTaille.x * plateauTaille.y; i++) {
+                const div = document.createElement('div');
+                div.classList.add('case');
+
+                if (i === positionJoueur1) {
+                    div.classList.add('player1');
+                    div.textContent = "J1";
+                } else if (i === positionJoueur2) {
+                    div.classList.add('player2');
+                    div.textContent = "J2";
+                } else if (contenuPlateau[i] === "item") {
+                    div.classList.add('item');
+                    div.textContent = "I";
+                } else if (contenuPlateau[i] === "mob") {
+                    div.classList.add('mob');
+                    div.textContent = "M";
+                }
+
+                plateau.appendChild(div);
+            }
+        }
+
+        // Initialisation des mobs et items aléatoires
+        function initialiserContenu() {
+            for (let i = 0; i < plateauTaille.x * plateauTaille.y; i++) {
+                const random = Math.random();
+                if (random < 0.1) contenuPlateau[i] = "mob"; // 10% de chance d'être un mob
+                else if (random < 0.2) contenuPlateau[i] = "item"; // 10% de chance d'être un item
+                else contenuPlateau[i] = null;
+            }
+        }
+
+        // Déplacer un joueur
+        function deplacerJoueur(joueur) {
+            const de = Math.floor(Math.random() * 6) + 1;
+            alert(`Joueur ${joueur} lance le dé et obtient un ${de}.`);
+            
+            if (joueur === 1) {
+                positionJoueur1 = Math.min(positionJoueur1 + de, plateauTaille.x * plateauTaille.y - 1);
+                verifierCase(positionJoueur1, 1);
+            } else {
+                positionJoueur2 = Math.min(positionJoueur2 + de, plateauTaille.x * plateauTaille.y - 1);
+                verifierCase(positionJoueur2, 2);
+            }
+            
+            genererPlateau();
+        }
+
+        // Vérifier le contenu de la case
+        function verifierCase(position, joueur) {
+            if (contenuPlateau[position] === "mob") {
+                alert(`Joueur ${joueur} rencontre un Mob !`);
+                contenuPlateau[position] = null; // Retire le mob après interaction
+            } else if (contenuPlateau[position] === "item") {
+                alert(`Joueur ${joueur} trouve un Item !`);
+                contenuPlateau[position] = null; // Retire l'item après interaction
+            }
+        }
+
+        // Lancement du jeu
+        initialiserContenu();
+        genererPlateau();
+    </script>
+</body>
+</html>
